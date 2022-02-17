@@ -1,112 +1,78 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {useEffect} from 'react';
+import GoogleFit, {Scopes} from 'react-native-google-fit';
+import {Platform, Button, View} from 'react-native';
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App = () => {
+  useEffect(() => {
+    const options = {
+      scopes: [
+        Scopes.FITNESS_ACTIVITY_READ,
+        Scopes.FITNESS_ACTIVITY_WRITE,
+        Scopes.FITNESS_BODY_READ,
+        Scopes.FITNESS_BODY_WRITE,
+      ],
+    };
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+    Platform.OS === 'android' &&
+      GoogleFit.authorize(options)
+        .then(authResult => {
+          if (authResult.success) {
+            console.log('success');
+          } else {
+            console.log('fail', authResult);
+          }
+        })
+        .catch(error => {
+          console.log('error', error);
+        });
+  }, []);
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+  async function fetchData() {
+    console.log('enter');
+    const opt = {
+      unit: 'pound', // required; default 'kg'
+      startDate: '2022-01-01T00:00:17.971Z', // required
+      endDate: new Date().toISOString(), // required
+    };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+    const res = await GoogleFit.getWeightSamples(opt);
+    console.log('VALUE===>>>', res);
+  }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const setWeight = () => {
+    const opt = {
+      value: 200,
+      date: new Date().toISOString(),
+      unit: 'pound',
+    };
+
+    GoogleFit.saveWeight(opt, (err, res) => {
+      if (err) {
+        console.log('err', err);
+      }
+      if (res) {
+        console.log('rez', res);
+      }
+    });
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{marginTop: 100}}>
+      <Button
+        onPress={fetchData}
+        title="Get Weight"
+        color="#841584"
+        accessibilityLabel="Learn more about this purple button"
+      />
+
+      <Button
+        onPress={setWeight}
+        title="Set Weight"
+        color="#841584"
+        accessibilityLabel="Learn more about this purple button"
+      />
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
