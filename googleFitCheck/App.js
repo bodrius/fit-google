@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
-import GoogleFit, {Scopes} from 'react-native-google-fit';
 import {Platform, Button, View} from 'react-native';
+import GoogleFit, {Scopes} from 'react-native-google-fit';
+import {request, PERMISSIONS} from 'react-native-permissions';
 
 const App = () => {
   useEffect(() => {
@@ -12,25 +13,32 @@ const App = () => {
         Scopes.FITNESS_BODY_WRITE,
       ],
     };
-
     Platform.OS === 'android' &&
-      GoogleFit.authorize(options)
-        .then(authResult => {
-          if (authResult.success) {
-            console.log('success');
-          } else {
-            console.log('fail', authResult);
-          }
-        })
-        .catch(error => {
-          console.log('error', error);
-        });
+      request(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION).then(result => {
+        if (result === 'granted') {
+          GoogleFit.authorize(options)
+            .then(authResult => {
+              if (authResult.success) {
+                console.log('success');
+                GoogleFit.startRecording(callback);
+              } else {
+                console.log('fail', authResult);
+              }
+            })
+            .catch(error => {
+              console.log('error', error);
+            });
+        }
+      });
   }, []);
 
+  const callback = event => {
+    console.log('event', event);
+  };
+
   async function fetchData() {
-    console.log('enter');
     const opt = {
-      unit: 'pound', // required; default 'kg'
+      unit: 'kg', // required; default 'kg'
       startDate: '2022-01-01T00:00:17.971Z', // required
       endDate: new Date().toISOString(), // required
     };
@@ -41,19 +49,22 @@ const App = () => {
 
   const setWeight = () => {
     const opt = {
-      value: 200,
+      value: 20,
       date: new Date().toISOString(),
-      unit: 'pound',
+      unit: 'kg',
     };
 
     GoogleFit.saveWeight(opt, (err, res) => {
-      if (err) {
-        console.log('err', err);
-      }
       if (res) {
-        console.log('rez', res);
+        console.log('rez==>>>', res);
       }
     });
+  };
+
+  const setSteps = () => {
+    GoogleFit.getDailySteps(new Date())
+      .then(res => console.log('res', res))
+      .catch();
   };
 
   return (
@@ -68,7 +79,14 @@ const App = () => {
       <Button
         onPress={setWeight}
         title="Set Weight"
-        color="#841584"
+        color="red"
+        accessibilityLabel="Learn more about this purple button"
+      />
+
+      <Button
+        onPress={setSteps}
+        title="Set Weight"
+        color="green"
         accessibilityLabel="Learn more about this purple button"
       />
     </View>
