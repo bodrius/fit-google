@@ -85,7 +85,7 @@ const App = () => {
 
       <Button
         onPress={setSteps}
-        title="Set Weight"
+        title="GET STEPS"
         color="green"
         accessibilityLabel="Learn more about this purple button"
       />
