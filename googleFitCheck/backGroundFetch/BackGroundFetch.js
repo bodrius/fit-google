@@ -41,7 +41,8 @@ const BackGroundFetch = () => {
     };
 
     const res = await GoogleFit.getWeightSamples(opt);
-    console.log('VALUE===>>>', res);
+    console.log('BackgroundFetch WORK==>>>');
+    Alert.alert('BackgroundFetch WORK', `${res[0].value}`);
   };
 
   return <></>;
