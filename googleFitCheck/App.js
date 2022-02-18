@@ -3,6 +3,8 @@ import {Platform, Button, View} from 'react-native';
 import GoogleFit, {Scopes} from 'react-native-google-fit';
 import {request, PERMISSIONS} from 'react-native-permissions';
 
+import BackGroundFetch from './backGroundFetch/BackGroundFetch';
+
 const App = () => {
   useEffect(() => {
     const options = {
@@ -89,6 +91,8 @@ const App = () => {
         color="green"
         accessibilityLabel="Learn more about this purple button"
       />
+
+      <BackGroundFetch />
     </View>
   );
 };
