@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "react": "17.0.2",
-    "react-native": "0.67.2"
+    "react-native": "0.67.2",
+    "react-native-background-fetch": "^4.0.5",
+    "react-native-google-fit": "^0.18.2",
+    "react-native-permissions": "^3.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

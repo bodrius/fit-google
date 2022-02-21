@@ -1,112 +1,100 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {useEffect} from 'react';
+import {Platform, Button, View} from 'react-native';
+import GoogleFit, {Scopes} from 'react-native-google-fit';
+import {request, PERMISSIONS} from 'react-native-permissions';
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import BackGroundFetch from './backGroundFetch/BackGroundFetch';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  useEffect(() => {
+    const options = {
+      scopes: [
+        Scopes.FITNESS_ACTIVITY_READ,
+        Scopes.FITNESS_ACTIVITY_WRITE,
+        Scopes.FITNESS_BODY_READ,
+        Scopes.FITNESS_BODY_WRITE,
+      ],
+    };
+    Platform.OS === 'android' &&
+      request(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION).then(result => {
+        if (result === 'granted') {
+          GoogleFit.authorize(options)
+            .then(authResult => {
+              if (authResult.success) {
+                console.log('success');
+                GoogleFit.startRecording(callback);
+              } else {
+                console.log('fail', authResult);
+              }
+            })
+            .catch(error => {
+              console.log('error', error);
+            });
+        }
+      });
+  }, []);
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+  const callback = event => {
+    console.log('event', event);
+  };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  async function fetchData() {
+    const opt = {
+      unit: 'kg', // required; default 'kg'
+      startDate: '2022-01-01T00:00:17.971Z', // required
+      endDate: new Date().toISOString(), // required
+    };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    const res = await GoogleFit.getWeightSamples(opt);
+    console.log('VALUE===>>>', res);
+  }
+
+  const setWeight = () => {
+    const opt = {
+      value: 20,
+      date: new Date().toISOString(),
+      unit: 'kg',
+    };
+
+    GoogleFit.saveWeight(opt, (err, res) => {
+      if (res) {
+        console.log('rez==>>>', res);
+      }
+    });
+  };
+
+  const setSteps = () => {
+    GoogleFit.getDailySteps(new Date())
+      .then(res => console.log('res', res))
+      .catch();
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{marginTop: 100}}>
+      <Button
+        onPress={fetchData}
+        title="Get Weight"
+        color="#841584"
+        accessibilityLabel="Learn more about this purple button"
+      />
+
+      <Button
+        onPress={setWeight}
+        title="Set Weight"
+        color="red"
+        accessibilityLabel="Learn more about this purple button"
+      />
+
+      <Button
+        onPress={setSteps}
+        title="GET STEPS"
+        color="green"
+        accessibilityLabel="Learn more about this purple button"
+      />
+
+      <BackGroundFetch />
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
